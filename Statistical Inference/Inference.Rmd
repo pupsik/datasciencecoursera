@@ -1,0 +1,90 @@
+---
+output: word_document
+---
+#Statistical Inference
+##Course Project
+
+###Inference Exercies
+
+Now in the second portion of the class, we're going to analyze the ToothGrowth data in the R datasets package. 
+
+Let's load the dataset first and take a look at it. 
+```{r}
+data(ToothGrowth)
+print(head(ToothGrowth))
+```
+There are three variables in the dataset: Tooth length, Supplement type (VC or OJ) and Dose in milligrams.
+
+Let's graph the data
+```{r, echo=FALSE}
+library(ggplot2)
+ggraph1 <- ggplot(ToothGrowth, aes(x=factor(supp), y=len, fill=dose))+
+    geom_boxplot()+
+    facet_grid(~dose)+
+    labs(x="Supplement Type", y="Tooth Length", 
+         title = "Tooth Length by Supp Type for Diff Doses")
+print(ggraph1)
+
+ggraph2 <- ggplot(ToothGrowth, aes(x=factor(dose), y=len, fill=supp))+
+    geom_boxplot()+
+    facet_grid(~supp)+
+    labs(x="Dose", y="Tooth Length", 
+         title = "Tooth Length by Dose for Diff Supp Types")
+print(ggraph2)
+```
+
+
+Now we will use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. We will be assuming equal variances in the samples throughout the analysis. 
+
+Is there a difference between two delivery methods at different dose levels. Let's construct confidence intervals at 95% level assuming constant variance.
+
+```{r, echo=FALSE}
+temp <- ToothGrowth[ToothGrowth$dose==0.5,]
+ttest <- t.test(len ~ supp, temp, paired=FALSE, var.equal = FALSE, conf.level=0.95)
+print(ttest)
+```
+
+As evident in the above, zero is not in the 95% confidence interval. Therefore, when the dose is 0.5, there is a significant difference in tooth length between the two delivery methods.
+
+```{r, echo=FALSE}
+temp <- ToothGrowth[ToothGrowth$dose==1.0,]
+ttest <- t.test(len ~ supp, temp, paired=FALSE, var.equal = FALSE, conf.level=0.95)
+```
+
+In this example, when the dose is 1.0, we also observe significant difference in tooth length between the two delivery methods. The 95% confidence interval is  2.8; 9.06.
+
+```{r, echo=FALSE}
+temp <- ToothGrowth[ToothGrowth$dose==2.0,]
+ttest <- t.test(len ~ supp, temp, paired=FALSE, var.equal = FALSE, conf.level=0.95)
+```
+
+However, when the dose is 2.0, we find no significant difference in tooth length by the delivery method at the 95% confidence level.The 95% confidence interval is -3.80; 3.64. As we can see, zero falls in the 95% confidence interval. 
+
+Now we will test if there is any difference in tooth length by dose within the same delivery method. 
+
+```{r,echo=FALSE}
+temp <- ToothGrowth[ToothGrowth$supp=="VC" & ToothGrowth$dose != 2.0,]
+ttest <- t.test(len ~ dose, temp, paired=FALSE, var.equal = FALSE, conf.level=0.95)
+```
+
+Within the OJ delivery method, there is a significant difference (at 95% significance level) in tooth length when the doses are 0.5 and 1.0. The 95% confidence interval is  -11.27; -6.31
+
+```{r, echo=FALSE}
+temp <- ToothGrowth[ToothGrowth$supp=="VC" & ToothGrowth$dose != 0.5,]
+ttest <- t.test(len ~ dose, temp, paired=FALSE, var.equal = FALSE, conf.level=0.95)
+```
+
+The difference is also significant when the doses are 1.0 and 2.0. The 95% confidence interval is  -13.05; -5.69
+
+```{r, echo=FALSE}
+temp <- ToothGrowth[ToothGrowth$supp=="OJ" & ToothGrowth$dose != 2.0,]
+ttest <- t.test(len ~ dose, temp, paired=FALSE, var.equal = FALSE, conf.level=0.95)
+```
+
+The difference in tooth length when the delivery method is OJ is also significant for doses 0.5 and 1.0 at 95% confidence level (-13.42;-5.52)
+```{r, echo=FALSE}
+temp <- ToothGrowth[ToothGrowth$supp=="OJ" & ToothGrowth$dose != 0.5,]
+ttest <- t.test(len ~ dose, temp, paired=FALSE, var.equal = FALSE, conf.level=0.95)
+```
+
+The difference is also significant for the doses 1.0 and 2.0.(95% confidence interval is -6.53; -0.19)
