@@ -1,0 +1,6 @@
+---
+title: "Unemployment Data Analysis"
+author: "Margarita Linets"
+date: "Saturday, April 18, 2015"
+output: pdf_document
+---

@@ -4,7 +4,7 @@ library(tidyr)
 library(stringr)
 
 #Set the working directory
-setwd("C:/Users/hom42612/Desktop/Coursera/UCI_HAR_Dataset")
+setwd("C:/Users/hom42612/Desktop/Coursera/Getting and Cleaning Data/UCI_HAR_Dataset")
 #Create Files for Training and Testing Datasets
 trainfile <- ("./train/X_train.txt")
 testfile <- ("./test/X_test.txt")

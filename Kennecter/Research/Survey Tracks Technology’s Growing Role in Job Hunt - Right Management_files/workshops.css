@@ -1,0 +1,63 @@
+﻿.wsRegister input, .wsRegister select
+{
+	float: left;
+	margin-bottom: 10px;
+}
+
+.wsRegister .error
+{
+	margin: 2px 0 5px 0;
+	clear: left;
+	width: 145px;
+}
+
+.wsRegister label
+{
+	clear: left;
+}
+
+.wsRegister .btns input
+{
+	margin-right: 20px;
+	float: none;
+}
+
+.ws_leftcol
+{
+	width: 180px;
+	float: left;	
+}
+
+.ws_rightcol
+{
+	width: 540px;
+	float: left;
+}
+
+.content .profileForm .radiobuttonlist input
+{
+	width: 10px;
+	float: none;
+	display: inline;
+	margin: 0 7px 10px 0;
+}
+
+.content .profileForm .radiobuttonlist label
+{
+	font-weight: normal;
+	float: none;
+	display: inline;
+	margin-bottom: 10px;
+	width: 100px;
+	vertical-align: top;
+}
+
+.radiobuttonlist td
+{
+	width: 200px;
+}
+
+.profileForm input {
+margin-right:400px;
+width:140px;
+}
