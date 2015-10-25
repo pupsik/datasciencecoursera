@@ -1,0 +1,124 @@
+
+##Practical Machine Learning Assignement
+
+In this exercise, we are using a Human Activity Recognition (HAR) dataset. HAR has emerged as a key research area in the last years and is gaining increasing attention by the pervasive computing research community, especially for the development of context-aware systems.
+
+The dataset has 5 activity classes: sitting-down, standing-up, standing, walking, and sitting. 
+
+We will use this dataset to learn to predict the activity class from all the other variables in the dataset. The exercise will include a training set, a quiz set and a test set. 
+
+First, let's read in the training dataset. 
+
+```{r, include=FALSE}
+setwd("C:/Users/hom42612/Desktop/Coursera/Machine Learning/Assignment")
+library(caret)
+library(dplyr)
+library(rattle)
+library(foreach)
+library(randomForest)
+library(doParallel)
+```
+
+```{r}
+set <- read.csv("./pml-training.csv", na.strings=c("NA","#DIV/0!"))
+```
+Not all variables that appear in the dataset will be used for predicting. I am going to filter the variables to include all variables except user name, X, timestamps and window variables.
+
+```{r}
+predictors <- names(set)[!names(set) %in% c("X", "user_name", "cvtd_timestamp","raw_timestamp_part_1", "raw_timestamp_part_2",
+                                            "new_window","num_window")]
+set <- set[, predictors]
+```
+Now, I am going to remove additional columns where more than 1/2 of observations is missing and reset predictors to exclude dropped variables and the dependent variable. 
+
+```{r}
+#Remove columns where more than 1/2 of observations is missing:
+set <- Filter(function(x){!all(length(which(is.na(x)))/nrow(set)>0.5)},
+              set)
+predictors <- names(set)[!names(set) %in% "classe"]
+```
+
+Let's split the training dataset into train and quiz data. We will use the training dataset to train the model and quiz data to check the prediction. Once the model is selected, we will apply to the test data set. 
+
+```{r}
+#Partition Data
+inTrain <- createDataPartition(y=set$classe,p=0.7,list=FALSE)
+
+train <- set[inTrain,]
+quiz <- set[-inTrain,]
+```
+
+## Model #1: RPART
+
+```{r, cache=TRUE}
+set.seed(1420)
+mod1 <- train(classe~., method="rpart", data=train)
+out1 <- predict(mod1, newdata=quiz)
+matrix1 <- confusionMatrix(out1, quiz$classe)
+print(matrix1)
+fancyRpartPlot(mod1$finalModel)
+```
+
+When running the model on the quiz dataset, we obtain the overall model accuracy of `r sprintf("%.3f",matrix1$overall["Accuracy"])`. While this model is certainly better than a random guess, we will try different tree methods to see if we can improve the predicting power of the algorithm. 
+
+
+## Model #2: Random Forest
+```{r, cache=TRUE}
+set.seed(1420)
+registerDoParallel()
+
+mod2 <- foreach(ntree=rep(200,10), .combine=randomForest::combine, .packages = 'randomForest') %dopar% {randomForest(train[,predictors],train$classe,ntree=ntree)}
+out2 <- predict(mod2, newdata=quiz[-ncol(quiz)])
+matrix2 <- confusionMatrix(out2, quiz$classe)
+print(matrix2)
+```
+
+When running the random forest model, we obtain prediction accuracy in the quiz dataset of `r sprintf("%.4f",matrix2$overall["Accuracy"])`. This is a very good result. 
+
+## Model #3: Boosting
+```{r, cache=TRUE, include=FALSE}
+set.seed(1420)
+fitControl <- trainControl(method="repeatedcv",number=3)
+mod3 <- train(classe~.,method="gbm", data=train, trControl=fitControl, 
+              verbose=FALSE)
+out3 <- predict(mod3, newdata=quiz)
+matrix3 <- confusionMatrix(out3, quiz$classe)
+```
+```{r}
+print(matrix3)
+```
+
+When running boosting model, we obtain prediction accuracy in the quiz dataset of `r sprintf("%.3f",matrix3$overall["Accuracy"])`. 
+
+Let's bring in the test data set. 
+
+```{r}
+test <- read.csv("./pml-testing.csv", na.strings=c("NA","#DIV/0!"))
+```
+
+I am going to use RandomForest model to predict the outcomes in the test dataset. I expect that the out of sample error will be less than  `r sprintf("%.3f",(1-matrix3$overall["Accuracy"])*100)`%.
+
+```{r, include=FALSE}
+test_names <- which(names(test) %in% names(train))
+test <- test[,test_names]
+out_test <- predict(mod2, newdata=test[,predictors])
+```
+
+Creating files for submission:
+
+```{r}
+answers <- as.character(out_test)
+pml_write_files = function(x){
+  n = length(x)
+  path <- "predictionAssignment_files/answers"
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=file.path(path, filename),quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+pml_write_files(answers)
+
+```
+
+
+

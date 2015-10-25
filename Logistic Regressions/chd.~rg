@@ -1,0 +1,34 @@
+logmode logmsg
+
+wfcreate u 1
+
+Call CHD
+Call LowBirthWeight
+
+Subroutine CHD
+pagecreate(page=chd) u 1
+
+import(page=chd, resize) "C:\Users\hom42612\Desktop\Coursera\Logistic Regressions\CHD_DATA.csv" 
+
+'Estimate logistic regression:
+
+EQUATION EQ_CHD.GLM(FAMILY=BINOMIAL, N=1) CHD C AGE
+show eq_chd
+endsub
+'**************************************************
+Subroutine LowBirthWeight
+	pagecreate(page=birth) u 1
+	import(page=birth, resize) "C:\Users\hom42612\Desktop\Coursera\Logistic Regressions\lowbirthweight.csv" 
+
+'Recode race to dummy variables
+smpl if race="other"
+series otherrace = 1
+smpl if race="black"
+series blackrace = 1
+
+smpl @all
+
+for %series otherrace blackrace
+	{%series} = @recode({%series}=NA, 0, {%series})	
+next	
+endsub
